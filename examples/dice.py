@@ -1,3 +1,5 @@
+# Use buttons and led to roll a dice (random)
+
 import RPi.GPIO as IO
 import time
 import random
@@ -7,6 +9,10 @@ IO.setmode(IO.BCM)
 buttons = [5,6,19,13,4,17]
 button_state = [0] * 8
 
+for i in range(0, 6):
+	print('Setup switch ', i+1, ' pin ' , buttons[i])
+	IO.setup(buttons[i], IO.IN, pull_up_down=IO.PUD_DOWN)
+
 leds = [21, 20, 16, 12, 7, 8]
 led_state = 0
 new_led_state = 0
@@ -15,9 +21,6 @@ for led in leds:
 	IO.setup(led, IO.IN)
 IO.setup(leds[led_state%6], IO.OUT)
 
-for i in range(0, 6):
-	print('Setup switch ', i+1, ' pin ' , buttons[i])
-	IO.setup(buttons[i], IO.IN, pull_up_down=IO.PUD_DOWN)
 
 while 1: 
 	for i in range(0, 6):
@@ -27,11 +30,13 @@ while 1:
 				print('Switch ', i+1, 'pressed')
 		else:
 			if button_state[i] == 1:
+				# When button is released, roll the dice
 				new_led_state = 18 + random.randint(0, 6)
 				button_state[i] = 0
 				print('Switch ', i+1, 'released')
 
 				
+	# Show the state of the dice				
 	if new_led_state > 0:
 		IO.setup(leds[led_state%6], IO.IN)
 
@@ -60,8 +65,6 @@ while 1:
 			time.sleep(0.15)
 		else:
 			time.sleep(0.2)
-
-					
 
 	time.sleep(0.01)
 

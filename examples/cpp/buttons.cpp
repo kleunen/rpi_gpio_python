@@ -49,7 +49,7 @@ int main()
 			}
 		}
 
-		gpioSleep(PI_TIME_RELATIVE, 0, 10 * 1000);
+		gpioSleep(PI_TIME_RELATIVE, 0, 1 * 1000);
 	}
 
 	gpioTerminate();

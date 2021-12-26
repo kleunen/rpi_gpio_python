@@ -19,3 +19,21 @@ The setup consists of:
 
 ![Setup](images/setup.png)
 
+# Pinout 
+Description of the component -> pin mapping
+
+| Component | Pin | 
+|---|---|
+| LED1 | GPIO21  |
+| LED2 | GPIO20  |
+| LED3 | GPIO16  |
+| LED4 | GPIO12  |
+| LED5 | GPIO7  |
+| LED6 | GPIO8  |
+| S1 | GPIO5  |
+| S2 | GPIO6  |
+| S3 | GPIO19  |
+| S4 | GPIO13  |
+| S5 | GPIO4  |
+| S6 | GPIO17  |
+| BUZZER  | GPIO27 (v2)   |

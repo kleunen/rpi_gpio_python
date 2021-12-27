@@ -135,4 +135,5 @@ IO.setup(14,IO.IN)
 IO.setup(15,IO.IN)
 IO.setup(18,IO.IN)
 
-run_game()
+while True:
+    run_game()

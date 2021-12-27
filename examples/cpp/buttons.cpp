@@ -11,7 +11,7 @@
 
 int main()
 {
-	if(gpioInitialise() == 0)
+	if(gpioInitialise() < 0)
 		return -1;
 
 	std::vector<unsigned int> leds = { 21, 20, 16, 12, 7, 8 };

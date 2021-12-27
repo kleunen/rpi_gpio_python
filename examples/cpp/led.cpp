@@ -10,7 +10,7 @@
 
 int main()
 {
-	if(gpioInitialise() == 0)
+	if(gpioInitialise() < 0) 
 		return -1;
 
 	gpioSetMode(21,PI_INPUT);

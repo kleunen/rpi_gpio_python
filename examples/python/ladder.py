@@ -22,122 +22,117 @@
 # IN THE SOFTWARE.
 
 import time
-import RPi.GPIO as GPIO
+import RPi.GPIO as IO
 
 # setup constants for use late
-LED_ON      = GPIO.LOW                              # led "on" state
-LED_OFF     = GPIO.HIGH                             # led "off" state
+LED_ON		= IO.LOW							  # led "on" state
+LED_OFF		= IO.HIGH							  # led "off" state
 
-GPIO_SWITCH = 5                                     # microswitch pin
-GPIO_LEDS   = [ 21, 20, 16, 12, 7, 8 ]              # list of the GPIO pins connected to LEDs in display order
-
-MAX_LEVEL   = 6                                     # maximum game level
+button = 5									   # microswitch pin
+leds   = [ 21, 20, 16, 12, 7, 8 ]			   # list of the IO pins connected to LEDs in display order
 
 # runs the game
 def run_game(): 
-    level = 1           # start of level 1
-    start = time.time() # reset the clock
-    current = LED_OFF   # initially the current level LED is off
+	level = 1					# start of level 1
+	start = time.time()			# reset the clock
+	current = LED_OFF			# initially the current level LED is off
+	max_level = len(leds)		# maximum game level
 
-    print("Game starting...")
+	print("Game starting...")
 
-    while True: # loop forever to keep the game running
+	while True: # loop forever to keep the game running
 
-        if GPIO.input( GPIO_SWITCH ) == True: # was the switch pressed?
+		if IO.input( button ) == True: # was the switch pressed?
 
-            # are we already on the last level? if so, win!
-            if level == MAX_LEVEL:              
-                win()                                               # show win animation
-                reset_leds();                                       # turn off all the LEDs
-                print("Game starting...")
-                level = 1                                           # reset to level 1
-            else:
-                # was button was pressed while LED was on?
-                if current == LED_ON:
-                    print("Level up!")
-                    level = level + 1                               # go to next level!
-                    time.sleep(0.5)
-                else:
-                    lose()
-                    print("Game starting...")
-                    level = 1
+			# are we already on the last level? if so, win!
+			if level == max_level:				
+				win()												# show win animation
+				return
+			else:
+				# was button was pressed while LED was on?
+				if current == IO.LOW:
+					print("Level up!")
+					level = level + 1								# go to next level!
+					time.sleep(0.5)
+				else:
+					lose()
+					return
 
-        # time in seconds per flash based on current level
-        # time ranges from 1 second to 0.22 seconds
-        time_per_flash =  1.0  / ( level / 2.0 ) 
+		# time in seconds per flash based on current level
+		# time ranges from 1 second to 0.22 seconds
+		time_per_flash =  1.0  / ( level / 2.0 ) 
 
-        # check if it's time to blink the current level LED
-        if time.time() - start > time_per_flash:
-            current = LED_ON if current == LED_OFF else LED_OFF # toggle the current level LED value
-            GPIO.output( GPIO_LEDS[ level - 1 ], current )      # update the LED
-            start = time.time()                                 # reset the clock
+		# check if it's time to blink the current level LED
+		if time.time() - start > time_per_flash:
+			current = IO.LOW if current == LED_OFF else LED_OFF # toggle the current level LED value
+			IO.output( leds[ level - 1 ], current )		 # update the LED
+			start = time.time()									# reset the clock
 
 
 # displays the winning animation
 def win():
-    print("We have a winner!")
+	print("We have a winner!")
 
-    # turn off all the LEDs
-    reset_leds()
+	# turn off all the LEDs
+	all_leds(IO.HIGH)
 
-    # do "knight rider" effect
-    for y in range( 0, 10 ):
-        # first light up each LED in squence
-        for gpio_idx in GPIO_LEDS[ 1:: ]:
-            GPIO.output( gpio_idx, LED_ON )
-            time.sleep( .05 )
-            GPIO.output( gpio_idx, LED_OFF )
+	# do "knight rider" effect
+	for y in range( 0, 10 ):
+		# first light up each LED in squence
+		for gpio_idx in leds[ 1:: ]:
+			IO.output( gpio_idx, IO.LOW )
+			time.sleep( .05 )
+			IO.output( gpio_idx, LED_OFF )
 
-        # then do the same in reverse
-        for gpio_idx in GPIO_LEDS[ ::-1 ]:
-            GPIO.output( gpio_idx, LED_ON )
-            time.sleep( .05 )
-            GPIO.output( gpio_idx, LED_OFF )
+		# then do the same in reverse
+		for gpio_idx in leds[ ::-1 ]:
+			IO.output( gpio_idx, IO.LOW )
+			time.sleep( .05 )
+			IO.output( gpio_idx, LED_OFF )
 
-    # turn off all the LEDs
-    reset_leds()
-
+	# turn off all the LEDs
+	all_leds(IO.HIGH)
 
 # displays the losing animation
 def lose():
-    print("Game Over!")
+	print("Game Over!")
 
-    # flash all LEDs on and off
-    for x in range( 0, 25 ):
-        reset_leds()
+	# flash all LEDs on and off
+	for x in range( 0, 25 ):
+		all_leds(IO.HIGH)
+		time.sleep( .04 )
+			
+		all_leds(IO.LOW)
+		time.sleep( .04 )
 
-        time.sleep( .04 )
-            
-        for gpio_idx in GPIO_LEDS:
-            GPIO.output( gpio_idx, LED_ON )
-            
-        time.sleep( .04 )
+	# turn off all the LEDs
+	all_leds(IO.HIGH)
 
-    # turn off all the LEDs
-    reset_leds()
-
-
-# turns off all the LEDs
-def reset_leds():
-    # turn off all the LEDs
-    for gpio_idx in GPIO_LEDS:
-        GPIO.output( gpio_idx, LED_OFF )
+# turns on/off all the LEDs
+def all_leds(value):
+	# turn off all the LEDs
+	for gpio_idx in leds:
+		IO.output( gpio_idx, value)
 
 
-# sets up the GPIO mode and pins
-def setup_gpio():
-    # allow us to refer to GPIO pins by assigned number (rather than by position)
-    GPIO.setmode( GPIO.BCM )
+# sets up the IO mode and pins
 
-    # setup the switch pin for input and to return "True" on a down pulse
-    GPIO.setup( GPIO_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_DOWN )
+# allow us to refer to IO pins by assigned number (rather than by position)
+IO.setmode( IO.BCM )
 
-    # set all of the LED GPIO pins to output mode
-    for gpio_idx in GPIO_LEDS:
-        GPIO.setup( gpio_idx, GPIO.OUT )
+# setup the switch pin for input and to return "True" on a down pulse
+IO.setup( button, IO.IN, pull_up_down=IO.PUD_DOWN )
 
+# set all of the LED IO pins to output mode
+for gpio_idx in leds:
+	IO.setup( gpio_idx, IO.OUT )
 
-# let's go!
-setup_gpio()
-reset_leds()
+# turn off all the LEDs
+all_leds(IO.HIGH)
+
+# disable RGB leds
+IO.setup(14,IO.IN)
+IO.setup(15,IO.IN)
+IO.setup(18,IO.IN)
+
 run_game()

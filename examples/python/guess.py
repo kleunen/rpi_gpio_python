@@ -4,6 +4,10 @@ import RPi.GPIO as IO
 import random
 import time
 
+# setup constants for use late
+LED_ON		= IO.LOW							  # led "on" state
+LED_OFF		= IO.HIGH							  # led "off" state
+
 buttons = [5, 6, 19, 13, 4, 17]
 button_state = [0] * len(buttons)
 leds   = [ 21, 20, 16, 12, 7, 8 ]            
@@ -13,13 +17,13 @@ def run_game():
     print("Game starting...")
 
     max_level = len(leds)       # maximum game level
-    all_leds(IO.HIGH)         # turn off all the LED
+    all_leds(LED_OFF)         # turn off all the LED
     level = 1                   # start of level 1
 
     secret_values = [random.randint(0, 3) for i in range(0, max_level)]
 
     start = time.time() # reset the clock
-    current = IO.HIGH
+    current = LED_OFF
 
     # Interval for flashing current level
     time_per_flash = 0.5
@@ -36,9 +40,9 @@ def run_game():
                     if i == secret_values[level-1]:
                         if level < max_level:
                             print("Level up!")
-                            IO.output( leds[ level - 1 ], IO.LOW )       # update the LED
+                            IO.output( leds[ level - 1 ], LED_ON )       # update the LED
                             level = level + 1                            # go to next level!
-                            current = IO.HIGH
+                            current = LED_OFF
                         else:
                             win()                                        # show win animation
                             return
@@ -46,13 +50,13 @@ def run_game():
                     else:
                         lose()
                         level = 1
-                        all_leds(IO.HIGH)
-                        current = IO.HIGH
+                        all_leds(LED_OFF)
+                        current = LED_OFF
 
 
         # check if it's time to blink the current level LED
         if time.time() - start > time_per_flash:
-            current = IO.LOW if current == IO.HIGH else IO.HIGH # toggle the current level LED value
+            current = LED_ON if current == LED_OFF else LED_OFF # toggle the current level LED value
             IO.output( leds[ level - 1 ], current )      # update the LED
             start = time.time()                                 # reset the clock
 
@@ -64,24 +68,24 @@ def win():
     print("We have a winner!")
 
     # turn off all the LEDs
-    all_leds(IO.HIGH)
+    all_leds(LED_OFF)
 
     # do "knight rider" effect
     for y in range( 0, 10 ):
         # first light up each LED in squence
         for gpio_idx in leds[ 1:: ]:
-            IO.output( gpio_idx, IO.LOW )
+            IO.output( gpio_idx, LED_ON )
             time.sleep( .05 )
-            IO.output( gpio_idx, IO.HIGH )
+            IO.output( gpio_idx, LED_OFF )
 
         # then do the same in reverse
         for gpio_idx in leds[ ::-1 ]:
-            IO.output( gpio_idx, IO.LOW )
+            IO.output( gpio_idx, LED_ON )
             time.sleep( .05 )
-            IO.output( gpio_idx, IO.HIGH )
+            IO.output( gpio_idx, LED_OFF )
 
     # turn off all the LEDs
-    all_leds(IO.HIGH)
+    all_leds(LED_OFF)
 
 
 # displays the losing animation
@@ -90,14 +94,14 @@ def lose():
 
     # flash all LEDs on and off
     for x in range( 0, 25 ):
-        all_leds(IO.HIGH)
+        all_leds(LED_OFF)
         time.sleep( .04 )
             
-        all_leds(IO.LOW)
+        all_leds(LED_ON)
         time.sleep( .04 )
 
     # turn off all the LEDs
-    all_leds(IO.HIGH)
+    all_leds(LED_OFF)
 
 
 # turns on/off all the LEDs
@@ -116,6 +120,11 @@ for i in range(0, len(buttons)):
 # set all of the LED IO pins to output mode
 for gpio_idx in leds:
     IO.setup( gpio_idx, IO.OUT )
+
+# disable RGB leds
+IO.setup(14,IO.IN)
+IO.setup(15,IO.IN)
+IO.setup(18,IO.IN)
 
 print ("Enter the 6-digit pincode (s1-s4) to win the game!")
 while True:
